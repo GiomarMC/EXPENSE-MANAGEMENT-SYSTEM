@@ -3,16 +3,9 @@ from django.db import models
 
 
 class Usuario(AbstractUser):
-    email = models.EmailField(unique=True)
-
-    nombre = models.CharField(max_length=100)
-    apellido = models.CharField(max_length=100)
-
-    activo = models.BooleanField(default=True)
-    created = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return f"{self.nombre} {self.apellido}"
+        return f"{self.first_name} {self.last_name}"
 
 
 class UsuarioTienda(models.Model):
