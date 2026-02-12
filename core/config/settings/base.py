@@ -11,6 +11,11 @@ https://docs.djangoproject.com/en/6.0/ref/settings/
 """
 
 from pathlib import Path
+import os
+from dotenv import load_dotenv
+from datetime import timedelta
+
+load_dotenv(override=True)
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
@@ -20,12 +25,12 @@ BASE_DIR = Path(__file__).resolve().parent.parent.parent
 # See https://docs.djangoproject.com/en/6.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = "django-insecure-j-2468jho2cct*0ey*%)at&3p&7bp4rd8ihsbev^sdgyd5l7!c"
+SECRET_KEY = os.getenv("SECRET_KEY")
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = os.getenv("DEBUG", 'True') == 'True'
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS", '').split(',')
 
 
 # Application definition
@@ -39,7 +44,26 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
 ]
 
+CUSTOM_APPS = [
+    "apps.users.apps.UsersConfig",
+    "apps.tiendas.apps.TiendasConfig",
+    "apps.inventario.apps.InventarioConfig",
+    "apps.ventas.apps.VentasConfig",
+    "apps.finanzas.apps.FinanzasConfig",
+    "apps.servicios.apps.ServiciosConfig",
+]
+
+INSTALLED_APPS += CUSTOM_APPS
+
+INSTALLED_APPS += [
+    "rest_framework",
+    "rest_framework_simplejwt",
+    "rest_framework.authtoken",
+    "corsheaders",
+]
+
 MIDDLEWARE = [
+    "corsheaders.middleware.CorsMiddleware",
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
@@ -47,17 +71,6 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
-]
-
-INSTALLED_APPS += [
-    "rest_framework",
-    "rest_framework_simplejwt",
-    "apps.users.apps.UsersConfig",
-    "apps.tiendas.apps.TiendasConfig",
-    "apps.inventario.apps.InventarioConfig",
-    "apps.ventas.apps.VentasConfig",
-    "apps.finanzas.apps.FinanzasConfig",
-    "apps.servicios.apps.ServiciosConfig",
 ]
 
 ROOT_URLCONF = "config.urls"
@@ -83,12 +96,7 @@ WSGI_APPLICATION = "config.wsgi.application"
 # Database
 # https://docs.djangoproject.com/en/6.0/ref/settings/#databases
 
-DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.sqlite3",
-        "NAME": BASE_DIR / "db.sqlite3",
-    }
-}
+DATABASES = {}
 
 
 # Password validation
@@ -113,9 +121,9 @@ AUTH_PASSWORD_VALIDATORS = [
 # Internationalization
 # https://docs.djangoproject.com/en/6.0/topics/i18n/
 
-LANGUAGE_CODE = "en-us"
+LANGUAGE_CODE = "es-pe"
 
-TIME_ZONE = "UTC"
+TIME_ZONE = "America/Lima"
 
 USE_I18N = True
 
@@ -135,3 +143,14 @@ REST_FRAMEWORK = {
         "rest_framework_simplejwt.authentication.JWTAuthentication",
     ],
 }
+
+SIMPLE_JWT = {
+    "ACCESS_TOKEN_LIFETIME": timedelta(hours=24),
+    "REFRESH_TOKEN_LIFETIME": timedelta(days=7),
+    "ROTATE_REFRESH_TOKENS": True,
+    "AUTH_HEADER_TYPES": (
+        "Bearer",
+    ),
+}
+
+AUTH_USER_MODEL = 'users.Usuario'
