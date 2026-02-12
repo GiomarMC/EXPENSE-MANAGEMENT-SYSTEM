@@ -95,10 +95,10 @@ Este sistema permite la gestión completa de negocios con múltiples tiendas, di
 ## 📦 Requisitos Previos
 
 ### Para Windows y Linux:
-- Python 3.10 o superior
-- PostgreSQL 14 o superior
+- Python 3.13.3
+- PostgreSQL 15 
+- Docker Desktop (Windows) o Docker Engine (Linux)
 - pip (gestor de paquetes de Python)
-- Git (opcional, para clonar el repositorio)
 
 ## 🚀 Instalación
 
@@ -110,17 +110,16 @@ Este sistema permite la gestión completa de negocios con múltiples tiendas, di
 3. Verificar instalación:
 ```cmd
 python --version
-pip --version
+pip --version   
 ```
 
-#### 2. Instalar PostgreSQL
-1. Descargar PostgreSQL desde [postgresql.org](https://www.postgresql.org/download/windows/)
-2. Durante la instalación, recordar la contraseña del usuario `postgres`
-3. Agregar PostgreSQL al PATH del sistema
+#### 2. Instalar Docker
+1. Descargar e instalar [Docker Desktop](https://www.docker.com/products/docker-desktop/)
+2. Iniciar Docker Desktop y asegurar que esté corriendo
 
 #### 3. Clonar o Descargar el Proyecto
 ```cmd
-cd D:\Giomar\Projects\Gestion_gastos\Gestion_gastos
+https://github.com/GiomarMC/EXPENSE-MANAGEMENT-SYSTEM.git
 ```
 
 #### 4. Crear Entorno Virtual
@@ -135,32 +134,15 @@ cd core
 pip install -r requirements.txt
 ```
 
-#### 6. Configurar Base de Datos
-1. Abrir pgAdmin o usar psql:
-```cmd
-psql -U postgres
-```
-
-2. Crear la base de datos:
-```sql
-CREATE DATABASE gestion_tiendas;
-CREATE USER gestion_user WITH PASSWORD 'tu_contraseña_segura';
-ALTER ROLE gestion_user SET client_encoding TO 'utf8';
-ALTER ROLE gestion_user SET default_transaction_isolation TO 'read committed';
-ALTER ROLE gestion_user SET timezone TO 'America/Lima';
-GRANT ALL PRIVILEGES ON DATABASE gestion_tiendas TO gestion_user;
-\q
-```
-
-#### 7. Configurar Variables de Entorno
-Crear archivo `.env` en la carpeta `core/`:
+#### 6. Configurar Variables de Entorno
+Crear archivo `.env` en la carpeta `core/` (necesario para Docker y Django):
 ```env
 # Base de Datos
-DB_NAME=gestion_tiendas
-DB_USER=gestion_user
-DB_PASSWORD=tu_contraseña_segura
-DB_HOST=localhost
-DB_PORT=5432
+POSTGRES_DB=gestion_tiendas
+POSTGRES_USER=gestion_user
+POSTGRES_PASSWORD=tu_contraseña_segura
+POSTGRES_HOST=localhost
+POSTGRES_PORT=5432
 
 # Django
 SECRET_KEY=tu-clave-secreta-muy-segura-aqui
@@ -170,6 +152,13 @@ ALLOWED_HOSTS=localhost,127.0.0.1
 # JWT
 JWT_SECRET_KEY=otra-clave-secreta-para-jwt
 ```
+
+#### 7. Levantar Base de Datos (Docker)
+Ejecutar desde la raíz del proyecto (donde está `compose.yml`):
+```cmd
+docker compose up -d
+```
+Esto levantará el contenedor de PostgreSQL configurado automáticamente.
 
 #### 8. Ejecutar Migraciones
 ```cmd
@@ -206,11 +195,14 @@ python3 --version
 pip3 --version
 ```
 
-#### 3. Instalar PostgreSQL
+#### 3. Instalar Docker
 ```bash
-sudo apt install postgresql postgresql-contrib -y
-sudo systemctl start postgresql
-sudo systemctl enable postgresql
+# Instalar Docker y Docker Compose
+sudo apt install docker.io docker-compose-v2 -y
+sudo systemctl start docker
+sudo systemctl enable docker
+sudo usermod -aG docker $USER
+# (Cerrar sesión e iniciar de nuevo para aplicar cambios de grupo)
 ```
 
 #### 4. Clonar o Navegar al Proyecto
@@ -230,23 +222,7 @@ cd core
 pip install -r requirements.txt
 ```
 
-#### 7. Configurar Base de Datos
-```bash
-sudo -u postgres psql
-```
-
-Dentro de PostgreSQL:
-```sql
-CREATE DATABASE gestion_tiendas;
-CREATE USER gestion_user WITH PASSWORD 'tu_contraseña_segura';
-ALTER ROLE gestion_user SET client_encoding TO 'utf8';
-ALTER ROLE gestion_user SET default_transaction_isolation TO 'read committed';
-ALTER ROLE gestion_user SET timezone TO 'America/Lima';
-GRANT ALL PRIVILEGES ON DATABASE gestion_tiendas TO gestion_user;
-\q
-```
-
-#### 8. Configurar Variables de Entorno
+#### 7. Configurar Variables de Entorno
 Crear archivo `.env` en la carpeta `core/`:
 ```bash
 nano .env
@@ -255,11 +231,11 @@ nano .env
 Contenido:
 ```env
 # Base de Datos
-DB_NAME=gestion_tiendas
-DB_USER=gestion_user
-DB_PASSWORD=tu_contraseña_segura
-DB_HOST=localhost
-DB_PORT=5432
+POSTGRES_DB=gestion_tiendas
+POSTGRES_USER=gestion_user
+POSTGRES_PASSWORD=tu_contraseña_segura
+POSTGRES_HOST=localhost
+POSTGRES_PORT=5432
 
 # Django
 SECRET_KEY=tu-clave-secreta-muy-segura-aqui
@@ -268,6 +244,14 @@ ALLOWED_HOSTS=localhost,127.0.0.1
 
 # JWT
 JWT_SECRET_KEY=otra-clave-secreta-para-jwt
+```
+
+Guardar con `Ctrl+O`, Enter, `Ctrl+X`
+
+#### 8. Levantar Base de Datos
+Desde la raíz del proyecto:
+```bash
+docker compose up -d
 ```
 
 Guardar con `Ctrl+O`, Enter, `Ctrl+X`
@@ -298,14 +282,14 @@ El servidor estará disponible en: `http://localhost:8000`
 
 **Windows:**
 ```cmd
-cd D:\Giomar\Projects\Gestion_gastos\Gestion_gastos\core
+cd *\Gestion_gastos\core
 .venv\Scripts\activate
 python manage.py runserver
 ```
 
 **Linux:**
 ```bash
-cd ~/Projects/Gestion_gastos/Gestion_gastos/core
+cd */Gestion_gastos/core
 source .venv/bin/activate
 python manage.py runserver
 ```
@@ -364,14 +348,11 @@ source .venv/bin/activate
 ```
 
 ### Error de conexión a PostgreSQL
-**Solución**: Verificar que PostgreSQL esté corriendo
+**Solución**: Verificar que el contenedor de Docker esté corriendo
 ```bash
-# Windows
-# Buscar "Services" y verificar que PostgreSQL esté iniciado
-
-# Linux
-sudo systemctl status postgresql
-sudo systemctl start postgresql
+docker compose ps
+# Si no está corriendo:
+docker compose up -d
 ```
 
 ### Error: "Port 8000 is already in use"
