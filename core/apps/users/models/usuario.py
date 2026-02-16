@@ -41,6 +41,7 @@ class UsuarioTienda(models.Model):
                 name='salario_non_negative'
             )
         ]
+        unique_together = ('usuario', 'tienda')
 
     def __str__(self):
         return f"{self.usuario} - {self.tienda} - {self.rol}"
