@@ -312,6 +312,18 @@ python manage.py runserver
 /api/finanzas/       - Control financiero y gastos
 ```
 
+### Documentación (Swagger / OpenAPI)
+
+Las rutas para la documentación automática de la API (Swagger / ReDoc / schema) son:
+
+```
+GET  /api/schema/    - OpenAPI schema (JSON)
+GET  /api/docs/      - Swagger UI (documentación interactiva)
+GET  /api/redoc/     - ReDoc UI (documentación alternativa)
+```
+
+Abre `/api/docs/` en tu servidor (por ejemplo `http://localhost:8000/api/docs/`) para ver la documentación completa y probar los endpoints.
+
 ## 📱 Desarrollo Móvil (Próximamente)
 
 Este backend está diseñado para soportar una aplicación móvil. La API REST permite:
