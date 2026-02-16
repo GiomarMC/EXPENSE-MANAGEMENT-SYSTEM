@@ -4,6 +4,8 @@ from rest_framework import serializers
 from django.contrib.auth import get_user_model
 from django.core.mail import send_mail
 from apps.users.models import UsuarioTienda
+from apps.users.models import Rol
+from apps.tiendas.models import Tienda
 
 Usuario = get_user_model()
 
@@ -15,11 +17,11 @@ def generar_password(longitud=10):
 
 class CrearUsuarioSerializer(serializers.ModelSerializer):
     tienda = serializers.PrimaryKeyRelatedField(
-        queryset=Usuario.objects.all(),
+        queryset=Tienda.objects.all(),
         required=False,
     )
     rol = serializers.PrimaryKeyRelatedField(
-        queryset=Usuario.objects.all(),
+        queryset=Rol.objects.all(),
         required=False,
     )
     salario = serializers.DecimalField(
