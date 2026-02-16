@@ -3,7 +3,7 @@ from rest_framework.routers import DefaultRouter
 from rest_framework_simplejwt.views import (
     TokenRefreshView,
 )
-from apps.users.views.profile import CompletarPerfilView
+from apps.users.views.profile import CompletarPerfilView, MeView
 from apps.users.views.change_password import ChangePasswordView
 from apps.users.views.login import CustomTokenObtainPairView
 from apps.users.views.register import CrearUsuarioView
@@ -21,6 +21,7 @@ urlpatterns = [
     path('profile/change_password/', ChangePasswordView.as_view(),
          name='change-password'),
     path('register/', CrearUsuarioView.as_view(), name='register'),
+    path('me/', MeView.as_view(), name='me'),
 ]
 
 urlpatterns += router.urls

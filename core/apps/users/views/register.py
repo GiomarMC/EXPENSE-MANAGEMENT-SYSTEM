@@ -1,11 +1,11 @@
 from rest_framework.response import Response
 from rest_framework import status, generics
-from apps.users.permissions import IsSuperUser
+from apps.users.permissions import IsOwner
 from apps.users.serializers.register import CrearUsuarioSerializer
 
 
 class CrearUsuarioView(generics.CreateAPIView):
-    permission_classes = [IsSuperUser]
+    permission_classes = [IsOwner]
     serializer_class = CrearUsuarioSerializer
 
     def post(self, request):
