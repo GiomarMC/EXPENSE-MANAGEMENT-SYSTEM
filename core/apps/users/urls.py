@@ -8,9 +8,16 @@ from apps.users.views.change_password import ChangePasswordView
 from apps.users.views.login import CustomTokenObtainPairView
 from apps.users.views.register import CrearUsuarioView
 from apps.users.views.rol_tienda import UsuarioTiendaViewSet
+from apps.users.views.asistencia import AsistenciaViewSet
+from apps.users.views.rol import RolViewSet
+from apps.users.views.user_list import UsuarioListViewSet
 
 router = DefaultRouter()
-router.register(r'usuario-tienda', UsuarioTiendaViewSet)
+router.register(r'usuario-tienda', UsuarioTiendaViewSet,
+                basename='usuario-tienda')
+router.register(r'asistencia', AsistenciaViewSet, basename='asistencia')
+router.register(r'roles', RolViewSet, basename='roles')
+router.register(r'usuarios', UsuarioListViewSet, basename='usuarios')
 
 urlpatterns = [
     path('login/', CustomTokenObtainPairView.as_view(),
