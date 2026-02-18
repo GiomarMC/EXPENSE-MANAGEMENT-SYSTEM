@@ -11,7 +11,7 @@ class Usuario(AbstractUser):
 
 
 class UsuarioTienda(models.Model):
-    usuario = models.ForeignKey(
+    usuario = models.OneToOneField(
         'users.Usuario',
         on_delete=models.CASCADE,
         related_name='tiendas'
