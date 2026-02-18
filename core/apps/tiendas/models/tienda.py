@@ -4,7 +4,7 @@ from django.db import models
 class Tienda(models.Model):
     nombre_sede = models.CharField(max_length=150)
     direccion = models.CharField(max_length=255)
-    
+
     id_duenio = models.ForeignKey(
         'users.Usuario',
         on_delete=models.CASCADE,
