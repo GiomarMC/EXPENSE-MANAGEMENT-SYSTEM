@@ -13,5 +13,8 @@ class Asistencia(models.Model):
     hora_salida = models.TimeField(blank=True, null=True)
     default = models.BooleanField(default=False)
 
+    class Meta:
+        unique_together = ('usuario_tienda', 'fecha')
+
     def __str__(self):
         return f"{self.usuario_tienda} - {self.fecha}"
