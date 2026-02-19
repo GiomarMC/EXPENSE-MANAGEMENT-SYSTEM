@@ -40,9 +40,8 @@ class VentaAdmin(admin.ModelAdmin):
 class VentaProductoAdmin(admin.ModelAdmin):
     list_display = (
         "venta",
-        "producto",
-        "lote",
+        "lote_producto",
         "cantidad",
         "precio_venta"
     )
-    list_filter = ("producto", "lote")
+    list_filter = ("lote_producto",)

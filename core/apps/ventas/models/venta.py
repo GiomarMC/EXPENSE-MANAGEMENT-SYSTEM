@@ -37,18 +37,14 @@ class VentaProducto(models.Model):
         related_name='detalle'
     )
 
-    producto = models.ForeignKey(
-        'inventario.Producto',
-        on_delete=models.PROTECT
-    )
-
-    lote = models.ForeignKey(
-        'inventario.Lote',
-        on_delete=models.PROTECT
+    lote_producto = models.ForeignKey(
+        'inventario.LoteProducto',
+        on_delete=models.PROTECT,
+        related_name='ventas'
     )
 
     cantidad = models.PositiveIntegerField()
     precio_venta = models.DecimalField(max_digits=10, decimal_places=2)
 
     def __str__(self):
-        return f"{self.producto} - {self.venta} - {self.lote}"
+        return f"{self.lote_producto.producto} - {self.venta}"
