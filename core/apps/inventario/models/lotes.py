@@ -15,6 +15,7 @@ class Lote(models.Model):
     def __str__(self):
         return f"Lote {self.id} - {self.tienda}"
 
+
 class LoteProducto(models.Model):
     lote = models.ForeignKey(
         'inventario.Lote',
@@ -29,6 +30,9 @@ class LoteProducto(models.Model):
 
     cantidad_inicial = models.PositiveIntegerField()
     cantidad_actual = models.PositiveIntegerField()
+
+    class Meta:
+        unique_together = ('lote', 'producto')
 
     def __str__(self):
         return f"{self.producto} - {self.lote}"
