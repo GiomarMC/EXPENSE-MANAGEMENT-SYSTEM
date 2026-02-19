@@ -1,4 +1,4 @@
-from rest_framework.permissions import IsAuthenticated
+from apps.users.permissions import IsWorkerOrAdminOrOwner
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.generics import GenericAPIView
@@ -6,7 +6,7 @@ from apps.users.serializers.change_password import ChangePasswordSerializer
 
 
 class ChangePasswordView(GenericAPIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsWorkerOrAdminOrOwner]
     serializer_class = ChangePasswordSerializer
 
     def patch(self, request, *args, **kwargs):

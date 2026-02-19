@@ -4,7 +4,7 @@ from apps.users.serializers.rol_tienda import (
     AsignarRolTiendaSerializer,
     UsuarioTiendaDetailSerializer
 )
-from apps.users.permissions import IsOwner
+from apps.users.permissions import IsOwnerOnly
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.decorators import action
 from rest_framework.response import Response
@@ -13,7 +13,7 @@ from apps.users.models import Usuario
 
 
 class UsuarioTiendaViewSet(viewsets.ModelViewSet):
-    permission_classes = [IsOwner]
+    permission_classes = [IsOwnerOnly]
 
     filter_backends = [DjangoFilterBackend]
     filterset_fields = ['tienda', 'rol', 'usuario']

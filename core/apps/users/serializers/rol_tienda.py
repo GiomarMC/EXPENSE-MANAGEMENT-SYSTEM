@@ -70,9 +70,9 @@ class MeSerializer(serializers.ModelSerializer):
             "tiendas"
         ]
 
-    def get_tiendas(self, obj):
+    def get_tiendas(self, obj) -> list:
         try:
             relacion = obj.tiendas
         except UsuarioTienda.DoesNotExist:
-            return None
-        return UsuarioTiendaMeSerializer(relacion).data
+            return []
+        return UsuarioTiendaMeSerializer(relacion, many=True).data

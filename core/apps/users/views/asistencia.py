@@ -1,7 +1,7 @@
 from rest_framework import mixins, viewsets
 from rest_framework.decorators import action
 from apps.users.models import Asistencia
-from apps.users.permissions import IsAdminOfStore
+from apps.users.permissions import IsAdminOrOwner
 from apps.users.serializers.asistencia import (
     MarcarEntradaSerializer,
     MarcarSalidaSerializer,
@@ -17,7 +17,7 @@ class AsistenciaViewSet(
     viewsets.GenericViewSet
 ):
     queryset = Asistencia.objects.all()
-    permission_classes = [IsAdminOfStore]
+    permission_classes = [IsAdminOrOwner]
 
     def get_serializer_class(self):
         if self.action == "marcar_entrada":
