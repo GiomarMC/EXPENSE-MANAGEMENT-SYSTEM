@@ -8,6 +8,6 @@ class GastoFijo(models.Model):
         related_name='gastos_fijos'
     )
 
-    descripcion = models.CharField(max_length=255, blank=True, null=True)
+    descripcion = models.CharField(max_length=255, blank=True)
     monto = models.DecimalField(max_digits=10, decimal_places=2)
     dia_pago = models.PositiveIntegerField()
