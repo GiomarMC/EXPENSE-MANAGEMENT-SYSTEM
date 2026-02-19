@@ -22,9 +22,8 @@ class UsuarioAdmin(UserAdmin):
     )
 
 
-
 @admin.register(Rol)
-class RodAdmin(admin.ModelAdmin):
+class RolAdmin(admin.ModelAdmin):
     model = Rol
     list_display = ('id', 'nombre',)
     search_fields = ('nombre',)
@@ -39,5 +38,6 @@ class AsistenciaInline(admin.TabularInline):
 class UsuarioTiendaAdmin(admin.ModelAdmin):
     list_display = ("usuario", "tienda", "rol", "salario")
     list_filter = ("tienda", "rol")
-    search_fields = ("usuario__username", "usuario__first_name", "usuario__last_name")
+    search_fields = ("usuario__username", "usuario__first_name",
+                     "usuario__last_name")
     inlines = [AsistenciaInline]
