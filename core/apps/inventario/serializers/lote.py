@@ -66,6 +66,11 @@ class LoteProductoDetailSerializer(serializers.ModelSerializer):
         source='producto.nombre',
         read_only=True
     )
+    producto_precio = serializers.DecimalField(
+        source='producto.precio_venta_base',
+        max_digits=10,
+        decimal_places=2,
+    )
 
     class Meta:
         model = LoteProducto
@@ -73,6 +78,7 @@ class LoteProductoDetailSerializer(serializers.ModelSerializer):
             "id",
             "producto",
             "producto_nombre",
+            "producto_precio",
             "cantidad_inicial",
             "cantidad_actual"
         ]
