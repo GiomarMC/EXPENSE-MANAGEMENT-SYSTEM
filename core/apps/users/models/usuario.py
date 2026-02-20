@@ -2,6 +2,8 @@ from django.contrib.auth.models import AbstractUser
 from django.db import models
 from django.core.validators import MinValueValidator
 from django.db.models import Q, CheckConstraint
+from apps.users.constants import Roles
+from django.core.exceptions import ValidationError
 
 
 class Usuario(AbstractUser):
@@ -11,7 +13,7 @@ class Usuario(AbstractUser):
 
 
 class UsuarioTienda(models.Model):
-    usuario = models.OneToOneField(
+    usuario = models.ForeignKey(
         'users.Usuario',
         on_delete=models.CASCADE,
         related_name='tiendas'
@@ -42,6 +44,21 @@ class UsuarioTienda(models.Model):
             )
         ]
         unique_together = ('usuario', 'tienda')
+
+    def clean(self):
+        if self.rol.nombre != Roles.DUENO:
+            other = UsuarioTienda.objects.filter(
+                usuario=self.usuario
+            ).exclude(pk=self.pk).exists()
+
+            if other:
+                raise ValidationError(
+                    "Este usuario ya está asignado a una tienda."
+                )
+
+    def save(self, *args, **kwargs):
+        self.full_clean()
+        super().save(*args, **kwargs)
 
     def __str__(self):
         return f"{self.usuario} - {self.tienda} - {self.rol}"

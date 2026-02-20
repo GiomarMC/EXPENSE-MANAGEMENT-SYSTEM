@@ -26,6 +26,8 @@ class Venta(models.Model):
     es_credito = models.BooleanField(default=False)
     total = models.DecimalField(max_digits=10, decimal_places=2)
 
+    is_active = models.BooleanField(default=True)
+
     def __str__(self):
         return f"Venta {self.id} - {self.tienda} - {self.fecha}"
 
