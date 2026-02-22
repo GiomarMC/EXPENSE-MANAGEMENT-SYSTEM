@@ -6,7 +6,7 @@ from apps.users.permissions import IsAdminOrOwner, IsWorkerOrAdminOrOwner
 
 class ProductoViewSet(viewsets.ModelViewSet):
     serializer_class = ProductoSerializer
-    queryset = Producto.objects.all()
+    queryset = Producto.objects.filter(is_active=True)
 
     def get_permissions(self):
         if self.action in ['list', 'retrieve']:

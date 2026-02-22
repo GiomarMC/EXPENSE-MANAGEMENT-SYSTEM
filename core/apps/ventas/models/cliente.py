@@ -8,3 +8,7 @@ class Cliente(models.Model):
 
     def __str__(self):
         return self.nombre
+
+    @property
+    def saldo_total(self):
+        return sum(d.saldo for d in self.deudas.filter(estado='ACTIVA'))

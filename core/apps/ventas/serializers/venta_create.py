@@ -1,14 +1,14 @@
 from rest_framework import serializers
-from apps.inventario.models.productos import Producto
 from apps.ventas.services.venta_service import VentaService
 from apps.tiendas.models.tienda import Tienda
 from apps.ventas.models.cliente import Cliente
 from apps.users.models.usuario import UsuarioTienda
+from apps.inventario.models.productos import Producto
 
 
 class VentaProductoInputSerializer(serializers.Serializer):
     producto_id = serializers.IntegerField()
-    cantidad = serializers.DecimalField(max_digits=10, decimal_places=2)
+    cantidad = serializers.IntegerField(min_value=1)
     precio_venta = serializers.DecimalField(
         max_digits=10,
         decimal_places=2,
@@ -16,55 +16,80 @@ class VentaProductoInputSerializer(serializers.Serializer):
     )
 
 
+class ClienteInputSerializer(serializers.Serializer):
+    nombre = serializers.CharField(required=False)
+    telefono = serializers.CharField(required=False)
+    email = serializers.EmailField(required=False, allow_null=True)
+
+
 class VentaCreateSerializer(serializers.Serializer):
     tienda_id = serializers.IntegerField()
     metodo_pago = serializers.CharField()
     es_credito = serializers.BooleanField()
     cliente_id = serializers.IntegerField(required=False, allow_null=True)
+    cliente = ClienteInputSerializer(required=False)
     productos = VentaProductoInputSerializer(many=True)
 
     def validate(self, data):
-        productos_input = data.get("productos", [])
+        es_credito = data.get("es_credito")
+        cliente_id = data.get("cliente_id")
+        cliente_data = data.get("cliente")
 
-        productos_procesados = []
-
-        for item in productos_input:
-            try:
-                producto = Producto.objects.get(id=item["producto_id"])
-            except Producto.DoesNotExist:
+        if es_credito:
+            if not cliente_id and not cliente_data:
                 raise serializers.ValidationError(
-                    f"Producto con id {item['producto_id']} no existe"
+                    "Una venta a credito requiere cliente"
                 )
 
-            precio_enviado = item.get("precio_venta")
-
-            if precio_enviado is None:
-                precio_final = producto.precio_venta_base
-            else:
-                if precio_enviado < producto.precio_venta_base:
-                    raise serializers.ValidationError(
-                        f"El precio de venta para {producto.nombre} "
-                        f"no puede ser menor al precio base "
-                        f"({producto.precio_venta_base})"
+            if cliente_id and cliente_data:
+                raise serializers.ValidationError(
+                    (
+                        "No puede proporcionar un cliente existente y un "
+                        "cliente nuevo al mismo tiempo"
                     )
-                precio_final = precio_enviado
+                )
 
-            productos_procesados.append({
-                "producto": producto,
-                "cantidad": item["cantidad"],
-                "precio_venta": precio_final
-            })
+        productos = data.get("productos", [])
 
-        data["productos"] = productos_procesados
+        if not productos:
+            raise serializers.ValidationError(
+                "Debe agregar al menos un producto"
+            )
+
+        productos_ids = [item["producto_id"] for item in productos]
+
+        if len(productos_ids) != len(set(productos_ids)):
+            raise serializers.ValidationError(
+                "No puede repetir el mismo producto en la venta"
+            )
 
         return data
 
-    def create(self, validate_data):
+    def create(self, validated_data):
         request = self.context["request"]
         usuario = request.user
+        productos_input = validated_data["productos"]
+        productos_resueltos = []
+
+        for item in productos_input:
+            try:
+                producto = Producto.objects.get(
+                    id=item["producto_id"],
+                    is_active=True
+                )
+            except Producto.DoesNotExist:
+                raise serializers.ValidationError(
+                    "El producto no existe"
+                )
+
+            productos_resueltos.append({
+                "producto": producto,
+                "cantidad": item["cantidad"],
+                "precio_venta": item.get("precio_venta")
+            })
 
         tienda = Tienda.objects.get(
-            id=validate_data["tienda_id"]
+            id=validated_data["tienda_id"]
         )
 
         try:
@@ -77,18 +102,32 @@ class VentaCreateSerializer(serializers.Serializer):
                 "El usuario no tiene acceso a esta tienda"
             )
 
+        cliente_data = validated_data.get("cliente")
         cliente = None
 
-        if validate_data.get("cliente_id"):
-            cliente = Cliente.objects.get(
-                id=validate_data["cliente_id"]
-            )
+        if validated_data["es_credito"]:
+            cliente_id = validated_data.get("cliente_id")
+            cliente_data = validated_data.get("cliente")
+
+            if cliente_id:
+                try:
+                    cliente = Cliente.objects.get(id=cliente_id)
+                except Cliente.DoesNotExist:
+                    raise serializers.ValidationError(
+                        "El cliente proporcionado no existe"
+                    )
+            else:
+                cliente = Cliente.objects.create(
+                    nombre=cliente_data["nombre"],
+                    telefono=cliente_data["telefono"],
+                    email=cliente_data.get("email")
+                )
 
         return VentaService.crear_venta(
             tienda=tienda,
             usuario_tienda=usuario_tienda,
-            metodo_pago=validate_data["metodo_pago"],
-            es_credito=validate_data["es_credito"],
+            metodo_pago=validated_data["metodo_pago"],
+            es_credito=validated_data["es_credito"],
             cliente=cliente,
-            productos=validate_data["productos"]
+            productos=productos_resueltos
         )

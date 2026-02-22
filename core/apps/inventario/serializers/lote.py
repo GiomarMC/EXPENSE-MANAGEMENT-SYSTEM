@@ -1,75 +1,82 @@
-from django.db import transaction
 from rest_framework import serializers
 from apps.inventario.models.lotes import Lote, LoteProducto
-from apps.inventario.models.productos import Producto
+from apps.inventario.services.lote_service import LoteService
+from apps.tiendas.models import Tienda
 
 
-class LoteProductoCreateSerializer(serializers.Serializer):
-    producto = serializers.PrimaryKeyRelatedField(
-        queryset=Producto.objects.filter(is_active=True)
-    )
+class LoteProductoInputSerializer(serializers.Serializer):
+    producto_id = serializers.IntegerField(required=False)
+    nombre = serializers.CharField(required=False)
+
     cantidad = serializers.IntegerField(min_value=1)
+    precio_compra = serializers.DecimalField(max_digits=10, decimal_places=2)
+    precio_venta_base = serializers.DecimalField(
+        max_digits=10, decimal_places=2
+    )
 
-
-class LoteCreateSerializer(serializers.ModelSerializer):
-    productos = LoteProductoCreateSerializer(many=True)
-
-    class Meta:
-        model = Lote
-        fields = [
-            "id",
-            "tienda",
-            "fecha_llegada",
-            "costo_operacion",
-            "costo_transporte",
-            "productos"
-        ]
-    read_only_fields = ['id']
-
-    def validate_tienda(self, tienda):
-        request = self.context['request']
-        user = request.user
-
-        if user.is_superuser:
-            return tienda
-
-        pertenece = user.tiendas.filter(
-            tienda=tienda,
-            rol__nombre='ADMINISTRADOR'
-        ).exists()
-
-        if not pertenece:
+    def validate(self, data):
+        if not data.get('producto_id') and not data.get('nombre'):
             raise serializers.ValidationError(
-                "No tienes permisos para agregar un lote a esta tienda."
+                "Debe proporcionar un producto"
             )
-        return tienda
 
-    @transaction.atomic
+        return data
+
+
+class LoteCreateAtomicSerializer(serializers.Serializer):
+    tienda = serializers.PrimaryKeyRelatedField(
+        queryset=Tienda.objects.all()
+    )
+    fecha_llegada = serializers.DateField()
+    costo_operacion = serializers.DecimalField(
+        max_digits=10, decimal_places=2
+    )
+    costo_transporte = serializers.DecimalField(
+        max_digits=10, decimal_places=2
+    )
+
+    productos = LoteProductoInputSerializer(many=True)
+
+    def validate_productos(self, value):
+        if not value:
+            raise serializers.ValidationError(
+                "Debe agregar al menos un producto al lote"
+            )
+        return value
+
+    def validate(self, attrs):
+        productos = attrs.get("productos", [])
+
+        productos_ids = []
+        productos_nombres = []
+
+        for item in productos:
+            if item.get("producto_id"):
+                productos_ids.append(item["producto_id"])
+            elif item.get("nombre"):
+                productos_nombres.append(item["nombre"].strip().lower())
+
+        if len(productos_ids) != len(set(productos_ids)):
+            raise serializers.ValidationError(
+                "No puede repetir el mismo producto en el lote"
+            )
+
+        if len(productos_nombres) != len(set(productos_nombres)):
+            raise serializers.ValidationError(
+                "No puede repetir productos con el mismo nombre"
+            )
+
+        return attrs
+
     def create(self, validated_data):
-        productos_data = validated_data.pop('productos')
-        lote = Lote.objects.create(**validated_data)
-
-        LoteProducto.objects.bulk_create([
-            LoteProducto(
-                lote=lote,
-                producto=item['producto'],
-                cantidad_inicial=item['cantidad'],
-                cantidad_actual=item['cantidad']
-            ) for item in productos_data
-        ])
-
-        return lote
+        user = self.context['request'].user
+        return LoteService.crear_lote_completo(validated_data, user)
 
 
 class LoteProductoDetailSerializer(serializers.ModelSerializer):
     producto_nombre = serializers.CharField(
         source='producto.nombre',
         read_only=True
-    )
-    producto_precio = serializers.DecimalField(
-        source='producto.precio_venta_base',
-        max_digits=10,
-        decimal_places=2,
     )
 
     class Meta:
@@ -78,9 +85,11 @@ class LoteProductoDetailSerializer(serializers.ModelSerializer):
             "id",
             "producto",
             "producto_nombre",
-            "producto_precio",
             "cantidad_inicial",
-            "cantidad_actual"
+            "cantidad_actual",
+            "precio_compra",
+            "precio_venta_base",
+            "is_active"
         ]
 
 
@@ -95,5 +104,6 @@ class LoteDetailSerializer(serializers.ModelSerializer):
             "fecha_llegada",
             "costo_operacion",
             "costo_transporte",
+            "is_active",
             "productos"
         ]

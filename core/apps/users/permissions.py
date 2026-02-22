@@ -11,9 +11,6 @@ class HasStoreRole(BasePermission):
         if not user or not user.is_authenticated:
             return False
 
-        if user.is_superuser:
-            return True
-
         if not self.allow_roles:
             return True
 
@@ -23,12 +20,12 @@ class HasStoreRole(BasePermission):
 
 
 class IsOwnerOnly(HasStoreRole):
-    allow_roles = []
+    allow_roles = [Roles.DUENO]
 
 
 class IsAdminOrOwner(HasStoreRole):
-    allow_roles = [Roles.ADMIN]
+    allow_roles = [Roles.ADMIN, Roles.DUENO]
 
 
 class IsWorkerOrAdminOrOwner(HasStoreRole):
-    allow_roles = [Roles.TRABAJADOR, Roles.ADMIN]
+    allow_roles = [Roles.TRABAJADOR, Roles.ADMIN, Roles.DUENO]

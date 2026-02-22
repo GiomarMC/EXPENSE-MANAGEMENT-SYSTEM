@@ -1,5 +1,6 @@
 from rest_framework import serializers
 from apps.ventas.models.venta import Venta, VentaProducto
+from apps.ventas.models.cliente import Cliente
 
 
 class VentaProductoReadSerializer(serializers.ModelSerializer):
@@ -14,8 +15,27 @@ class VentaProductoReadSerializer(serializers.ModelSerializer):
         ]
 
 
+class ClienteReadSerializer(serializers.ModelSerializer):
+    saldo_total = serializers.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        read_only=True
+    )
+
+    class Meta:
+        model = Cliente
+        fields = [
+            "id",
+            "nombre",
+            "telefono",
+            "email",
+            "saldo_total"
+        ]
+
+
 class VentaReadSerializer(serializers.ModelSerializer):
     detalle = VentaProductoReadSerializer(many=True)
+    cliente = ClienteReadSerializer(read_only=True)
 
     class Meta:
         model = Venta
@@ -23,8 +43,10 @@ class VentaReadSerializer(serializers.ModelSerializer):
             "id",
             "tienda",
             "usuario_tienda",
+            "cliente",
             "fecha",
             "metodo_pago",
+            "es_credito",
             "total",
             "detalle"
         ]
