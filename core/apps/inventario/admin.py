@@ -4,7 +4,7 @@ from .models import Producto, Lote, LoteProducto
 
 @admin.register(Producto)
 class ProductoAdmin(admin.ModelAdmin):
-    list_display = ("nombre", "precio_compra", "precio_venta_base")
+    list_display = ("nombre", "is_active")
     search_fields = ("nombre",)
 
 
@@ -20,7 +20,8 @@ class LoteAdmin(admin.ModelAdmin):
         "tienda",
         "fecha_llegada",
         "costo_operacion",
-        "costo_transporte"
+        "costo_transporte",
+        "is_active"
     )
     list_filter = ("tienda", "fecha_llegada")
     inlines = [LoteProductoInline]
@@ -32,6 +33,9 @@ class LoteProductoAdmin(admin.ModelAdmin):
         "lote",
         "producto",
         "cantidad_inicial",
-        "cantidad_actual"
+        "cantidad_actual",
+        "precio_compra",
+        "precio_venta_base",
+        "is_active"
     )
     list_filter = ("lote__tienda", "producto")
